@@ -25,8 +25,8 @@ public class Client extends JFrame implements Runnable {
     private TextField chatTextField;
     private TextArea chatTextArea;    
     private Socket socket;
-    private ObjectOutputStream dout;
-    private ObjectInputStream din;
+    private ObjectOutputStream objectOutput;
+    private ObjectInputStream objectInput;
     private String name;
     private JLabel countLabel;
     
@@ -36,10 +36,12 @@ public class Client extends JFrame implements Runnable {
         try {
             socket = new Socket("localhost", 55555);
             System.out.println("connected to " + socket);
+            System.out.println("connected as " + name);
             chatTextArea.setText("Vítejte v chatovací místnosti!\n\n");
-            dout = new ObjectOutputStream(socket.getOutputStream());
-            dout.writeObject(new Message(name, "", " se připojil"));
-            din = new ObjectInputStream(socket.getInputStream());
+            objectOutput = new ObjectOutputStream(socket.getOutputStream());
+            objectOutput.writeObject(new Message(name, "", " se připojil"));
+            System.out.println("Sending welcome message");
+            objectInput = new ObjectInputStream(socket.getInputStream());
             new Thread(this).start();
         }
         catch(IOException ie) {
@@ -54,10 +56,12 @@ public class Client extends JFrame implements Runnable {
             while (true) {
                 DateFormat dateFormat = new SimpleDateFormat("HH:mm");
                 Date date = new Date();
-                Message message = (Message)din.readObject();
+                Message message = (Message)objectInput.readObject();
                 chatTextArea.append(message.getName() + message.getWelcome() + " ("
                         + dateFormat.format(date) + ")\n" + message.getMessage() + "\n");
-                countLabel.setText(Integer.toString(message.getUserCount()));
+                countLabel.setText("Počet uživatelů v místnosti: "
+                        + Integer.toString(message.getUserCount()));
+                System.out.println("Receiving message");
             }
         }
         catch(IOException ie) {
@@ -72,15 +76,20 @@ public class Client extends JFrame implements Runnable {
         chatTextField = new TextField();
         chatTextArea = new TextArea();
         countLabel = new JLabel("");
+        JLabel nameLabel = new JLabel("Přihlášen jako: " + this.name);
         chatTextArea.setEditable(false);
         JPanel panel = new JPanel();
+        JPanel panel1 = new JPanel();
         this.setContentPane(panel);
         this.setSize(600, 400);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         panel.setLayout(new BorderLayout());
         panel.add("North", chatTextField);
         panel.add("Center", chatTextArea);
-        panel.add("South", countLabel);
+        panel1.setLayout(new BorderLayout());
+        panel1.add("West", nameLabel);
+        panel1.add("East", countLabel);
+        panel.add("South", panel1);
         chatTextField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent evt) {
@@ -95,8 +104,9 @@ public class Client extends JFrame implements Runnable {
     
     private void enterPressed(KeyEvent evt) {
         try {
-            dout.writeObject(new Message(name, chatTextField.getText() + "\n", ""));
+            objectOutput.writeObject(new Message(name, chatTextField.getText() + "\n", ""));
             chatTextField.setText("");
+            System.out.println("Sending message");
         }
         catch(IOException ie) {
             System.out.println(ie);
