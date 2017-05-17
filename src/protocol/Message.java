@@ -16,16 +16,12 @@ public class Message implements Serializable {
     private String name;
     private String message;
     private int userCount;
+    private String welcome;
     
-    public Message(String name, String message){
+    public Message(String name, String message, String welcome){
         this.name = name;
         this.message = message;
-    }
-
-    public Message(String name, String message, int count){
-        this.name = name;
-        this.message = message;
-        this.userCount = count;
+        this.welcome = welcome;
     }
     
     public String getName() {
@@ -50,6 +46,14 @@ public class Message implements Serializable {
 
     public void setUserCount(int userCount) {
         this.userCount = userCount;
+    }
+
+    public String getWelcome() {
+        return welcome;
+    }
+
+    public void setWelcome(String welcome) {
+        this.welcome = welcome;
     }
     
 }

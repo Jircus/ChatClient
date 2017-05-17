@@ -38,7 +38,7 @@ public class Client extends JFrame implements Runnable {
             System.out.println("connected to " + socket);
             chatTextArea.setText("Vítejte v chatovací místnosti!\n\n");
             dout = new ObjectOutputStream(socket.getOutputStream());
-            dout.writeObject(new Message("Uživatel " + name + " se připojil", ""));
+            dout.writeObject(new Message(name, "", " se připojil"));
             din = new ObjectInputStream(socket.getInputStream());
             new Thread(this).start();
         }
@@ -55,8 +55,8 @@ public class Client extends JFrame implements Runnable {
                 DateFormat dateFormat = new SimpleDateFormat("HH:mm");
                 Date date = new Date();
                 Message message = (Message)din.readObject();
-                chatTextArea.append(message.getName() + " (" + dateFormat.format(date)
-                    + ")\n" + message.getMessage() + "\n");
+                chatTextArea.append(message.getName() + message.getWelcome() + " ("
+                        + dateFormat.format(date) + ")\n" + message.getMessage() + "\n");
                 countLabel.setText(Integer.toString(message.getUserCount()));
             }
         }
@@ -95,7 +95,7 @@ public class Client extends JFrame implements Runnable {
     
     private void enterPressed(KeyEvent evt) {
         try {
-            dout.writeObject(new Message(name, chatTextField.getText() + "\n"));
+            dout.writeObject(new Message(name, chatTextField.getText() + "\n", ""));
             chatTextField.setText("");
         }
         catch(IOException ie) {
